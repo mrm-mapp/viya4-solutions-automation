@@ -78,10 +78,10 @@ on:
       environment:
         description: 'Environment to deploy to'
         required: true
-        default: 'staging'
+        default: 'Azure Subscription'
         type: choice
         options: 
-          - 'staging'
+          - 'Azure Subscription'
       additional_parameters:
         description: 'Additional Parameters for the deployment'
         required: false
