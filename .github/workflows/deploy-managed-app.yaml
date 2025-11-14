@@ -266,11 +266,9 @@ jobs:
   # The last job will run until the managed application is successfully deployed or the timeout is reached.
   # The last job MUST set the lastMonitoringJobFlag to true.
   monitor-deploy-managed-app-1sthour:
-    if: ${{ inputs.run_job == 'true' }}
     needs: 
       - prepare-monitoring-managed-app
       - construct-mrg-variables
-      - call-create-managed-app
     secrets: inherit
     uses: ./.github/workflows/monitor-deployment-managed-app.yaml
     with:
@@ -283,11 +281,9 @@ jobs:
       lastMonitoringJobFlag: false
 
   monitor-deploy-managed-app-2ndhour:
-    if: ${{ inputs.run_job == 'true' }}
     needs: 
       - monitor-deploy-managed-app-1sthour
       - construct-mrg-variables
-      - call-create-managed-app
     secrets: inherit
     uses: ./.github/workflows/monitor-deployment-managed-app.yaml
     with:
@@ -300,11 +296,9 @@ jobs:
       lastMonitoringJobFlag: false
 
   monitor-deploy-managed-app-3rdhour:
-    if: ${{ inputs.run_job == 'true' }}
     needs: 
       - monitor-deploy-managed-app-2ndhour
       - construct-mrg-variables
-      - call-create-managed-app
     secrets: inherit
     uses: ./.github/workflows/monitor-deployment-managed-app.yaml
     with:
