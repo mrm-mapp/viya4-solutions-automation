@@ -270,6 +270,7 @@ jobs:
     needs: 
       - prepare-monitoring-managed-app
       - construct-mrg-variables
+      - call-create-managed-app
     secrets: inherit
     uses: ./.github/workflows/monitor-deployment-managed-app.yaml
     with:
@@ -286,6 +287,7 @@ jobs:
     needs: 
       - monitor-deploy-managed-app-1sthour
       - construct-mrg-variables
+      - call-create-managed-app
     secrets: inherit
     uses: ./.github/workflows/monitor-deployment-managed-app.yaml
     with:
@@ -302,6 +304,7 @@ jobs:
     needs: 
       - monitor-deploy-managed-app-2ndhour
       - construct-mrg-variables
+      - call-create-managed-app
     secrets: inherit
     uses: ./.github/workflows/monitor-deployment-managed-app.yaml
     with:
