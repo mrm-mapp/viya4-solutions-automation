@@ -2,13 +2,24 @@
 
 ### Deploy SAS Solution (Automated way via GitHub Actions)
 
+This automated deployment workflow leverages GitHub Actions to provision and configure SAS solutions in Azure. By using this workflow, you benefit from repeatable deployments managed entirely through your GitHub repository. The workflow orchestrates all necessary steps—from resource creation to solution configuration and deployment monitoring — based on parameters you provide in the GitHub Actions UI.
+
+Key features include:
+- Integration with Azure for secure resource provisioning
+- Parameterized deployments for flexibility and customization
+- Automated logging and artifact management for traceability
+- Support for advanced configuration via additional parameters
+
+Follow the steps below to prepare your repository, configure GitHub Environment secrets, and trigger the deployment workflow for a streamlined SAS solution deployment experience in Azure.
+
+
 0. First, fork this repository—see [fork this repo](/doc/fork.md) for instructions. Once forked, go to your GitHub repository.
 
 1. Ensure your environment variables are set via a GitHub environment. GitHub Environments allow you to define deployment targets and are named configurations used for deployments.
 
    1. Click `Settings` > `Environments` (left sidebar).
    2. Click `New environment`.
-   3. Name your environment (for example `staging`, `production`).
+   3. Name your environment `Azure Subscription`.
    4. Configure `Secrets` by clicking `Add environment secret` and add at least the following secrets:
 
 
@@ -25,10 +36,9 @@
 | `TLS_KEY_B64`                | (Optional) TLS Key corresponding to `<prefix>.${DNS_SUFFIX}` (must be base64-encoded)                                             | `LS0tLS1CRUdJTiBSU0EgUFJ...`                  | Only if `DNS_SUFFIX` is provided       |
 | `TLS_TRUSTED_CA_CERTS_B64`   | (Optional) TLS Trusted CA certificate corresponding to `<prefix>.${DNS_SUFFIX}` (must be base64-encoded)                          | `LS0tLS1CRUdJTiBD...`                         | Only if `DNS_SUFFIX` is provided       |
 
-2. On the default branch (`main`), edit `.github/workflows/deploy-managed-app.yaml`, set the `environment` input to the environment name you configured above and commit.
-3. Go to `GitHub Actions`.
-4. Select the `Deploy Managed Application` workflow.
-5. Click `Run Workflow` and provide the required parameters:
+2. Go to `GitHub Actions`.
+3. Select the `Deploy Managed Application` workflow.
+4. Click `Run Workflow` and provide the required parameters:
 
 | Parameter Name                  | Description                                                                                                                                                                            | Example Value                            | Required |
 |---------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|------------------------------------------|----------|
@@ -98,7 +108,10 @@ The table below indicates which additional parameters are required
 | Azure Region/Location | location | No | `eastus` | [link](#azure-regionlocation) |
 | Azure Admin Group Name | azure_admin_group_name | No | see Environment Secrets | [link](#azure-regionlocation) |
 | Azure Admin Group Role | azure_admin_group_role | No | see Environment Secrets | [link](#azure-managed-application-definition-authorizations) |
-| DNS suffix | step_add_users | No | see Environment Secrets | [link](#dns-suffix) |
+| DNS suffix | dns_suffix | No | see Environment Secrets | [link](#dns-suffix) |
+| TLS certificate | tls_cert_b64 | No | see Environment Secrets | [link](#dns-suffix) |
+| TLS key | tls_key_b64 | No | see Environment Secrets | [link](#dns-suffix) |
+| TLS trusted CA certificate | tls_trusted_ca_certs_b64 | No | see Environment Secrets | [link](#dns-suffix) |
 | Package version | package_version | No | `latest` | [link](#package-version) |
 | Azure Storage Container Artifact Name | artifact_name | No | `package-deploy` | [link](#azure-storage-container-artifact-name) |
 | Managed Application Resource Group Name | mapp_rg_name | No | `mapp-<github.run_id>-rg` | [link](#managed-application-resource-group-name) |
