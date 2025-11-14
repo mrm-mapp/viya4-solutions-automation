@@ -219,3 +219,96 @@ jobs:
       ext_pg_ids_admin_password: ${{ fromJSON(needs.parse-additional-parameters.outputs.vars).ext_pg_ids_admin_password }}
       ext_pg_cds_admin_user: ${{ fromJSON(needs.parse-additional-parameters.outputs.vars).ext_pg_cds_admin_user }}
       ext_pg_cds_admin_password: ${{ fromJSON(needs.parse-additional-parameters.outputs.vars).ext_pg_cds_admin_password }}
+
+
+  construct-mrg-variables:
+    needs: 
+      - parse-additional-parameters
+      - call-create-managed-app
+    runs-on: ubuntu-latest
+    outputs:
+      mapp_mrg_name: ${{ steps.construct-mrg-variables.outputs.mapp_mrg_name }}
+      monitor_script_name: ${{ steps.construct-mrg-variables.outputs.monitor_script_name }}
+    steps:
+      - name: construct-mrg-variables
+        id: construct-mrg-variables
+        run: |
+          echo mapp_mrg_name=${mapp_rg_name//-rg}-mrg >> $GITHUB_OUTPUT
+          
+          if [ -z "${update_existing_deployment_mrg_name}" ]
+          then
+            echo monitor_script_name="${mapp_rg_name/-rg/-ds-viya-deploy}"  >> $GITHUB_OUTPUT
+          else
+            echo monitor_script_name="${mapp_rg_name/-rg/-ds-viya-update}"  >> $GITHUB_OUTPUT
+          fi
+            
+        env:
+          mapp_rg_name: ${{ fromJSON(needs.parse-additional-parameters.outputs.vars).mapp_rg_name }}
+          update_existing_deployment_mrg_name: ${{ fromJSON(needs.parse-additional-parameters.outputs.vars).update_existing_deployment_mrg_name }}
+
+  prepare-monitoring-managed-app:
+    needs: 
+      - construct-mrg-variables
+    secrets: inherit
+    uses: ./.github/workflows/prepare-monitoring-managed-app.yaml
+    with:
+      environment: ${{ inputs.environment }}
+      mapp_mrg_name: ${{ needs.construct-mrg-variables.outputs.mapp_mrg_name }}
+      monitor_script_name: ${{ needs.construct-mrg-variables.outputs.monitor_script_name }}
+      pollInterval: 30
+      # timeoutInSecondsDeploymentScripts:
+      #    Should be long enough to allow the deployment scripts to be created (depends on the sizing of the managed application which might create extra resources, like external Postgres databases)
+      #    Must be lower than 1 hour to avoid timeout issues in the workflow due to AZ login
+      timeoutInSecondsDeploymentScripts: 1800 
+
+  # This will monitor the deployment of the managed application in 3 hourly intervals.
+  # The first job will run for 1 hour, the second for 1 hour and the third for 1 hour. 
+  # The last job will run until the managed application is successfully deployed or the timeout is reached.
+  # The last job MUST set the lastMonitoringJobFlag to true.
+  monitor-deploy-managed-app-1sthour:
+    if: ${{ inputs.run_job == 'true' }}
+    needs: 
+      - prepare-monitoring-managed-app
+      - construct-mrg-variables
+    secrets: inherit
+    uses: ./.github/workflows/monitor-deployment-managed-app.yaml
+    with:
+      environment: ${{ inputs.environment }}
+      mapp_mrg_name: ${{ needs.construct-mrg-variables.outputs.mapp_mrg_name }}
+      monitor_script_name: ${{ needs.construct-mrg-variables.outputs.monitor_script_name }}
+      pollInterval: 30
+      maxDurationInSeconds: 3500  #   Must be lower than 1 hour to avoid timeout issues in the workflow due to AZ login
+      artifact_name: monitor-1sthour-${{ needs.construct-mrg-variables.outputs.monitor_script_name }}
+      lastMonitoringJobFlag: false
+
+  monitor-deploy-managed-app-2ndhour:
+    if: ${{ inputs.run_job == 'true' }}
+    needs: 
+      - monitor-deploy-managed-app-1sthour
+      - construct-mrg-variables
+    secrets: inherit
+    uses: ./.github/workflows/monitor-deployment-managed-app.yaml
+    with:
+      environment: ${{ inputs.environment }}
+      mapp_mrg_name: ${{ needs.construct-mrg-variables.outputs.mapp_mrg_name }}
+      monitor_script_name: ${{ needs.construct-mrg-variables.outputs.monitor_script_name }}
+      pollInterval: 30
+      maxDurationInSeconds: 3500  #   Must be lower than 1 hour to avoid timeout issues in the workflow due to AZ login
+      artifact_name: monitor-2ndhour-${{ needs.construct-mrg-variables.outputs.monitor_script_name }}
+      lastMonitoringJobFlag: false
+
+  monitor-deploy-managed-app-3rdhour:
+    if: ${{ inputs.run_job == 'true' }}
+    needs: 
+      - monitor-deploy-managed-app-2ndhour
+      - construct-mrg-variables
+    secrets: inherit
+    uses: ./.github/workflows/monitor-deployment-managed-app.yaml
+    with:
+      environment: ${{ inputs.environment }}
+      mapp_mrg_name: ${{ needs.construct-mrg-variables.outputs.mapp_mrg_name }}
+      monitor_script_name: ${{ needs.construct-mrg-variables.outputs.monitor_script_name }}
+      pollInterval: 30
+      maxDurationInSeconds: 3500  #   Must be lower than 1 hour to avoid timeout issues in the workflow due to AZ login
+      artifact_name: monitor-3rdhour-${{ needs.construct-mrg-variables.outputs.monitor_script_name }}
+      lastMonitoringJobFlag: true
