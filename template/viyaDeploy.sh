@@ -440,7 +440,10 @@ function applyViya4Manifests {
 
   if [ -f $HOME/deployments/${AKS}/${V4_CFG_NAMESPACE}/site-config/tls/ingress-annotation-transformer.yaml ]; then
     echolog "[applyViya4Manifests] ingress-annotation-transformer.yaml found under site-config/tls so lets make sure DaC doesn't touch it ..."
-    yq -y 'del(.[] | select(.name == "TLS - Certificate Generation - cert-manager"))' $HOME/viya4-deployment/roles/vdm/tasks/tls.yaml
+    tmp=$(mktemp)
+    cp $HOME/viya4-deployment/roles/vdm/tasks/tls.yaml $tmp
+    yq -y 'del(.[] | select(.name == "TLS - Certificate Generation - cert-manager"))' $tmp > $HOME/viya4-deployment/roles/vdm/tasks/tls.yaml
+    rm $tmp
     echolog "[applyViya4Manifests] ingress-annotation-transformer.yaml OK"
   fi
 
