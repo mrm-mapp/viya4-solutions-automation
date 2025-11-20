@@ -113,6 +113,7 @@ jobs:
           "ext_pg_cds_admin_password": "",
 
           "location": "eastus",
+          "storage_account_name": "viyasolutions${{ github.repository_owner }}",
 
           "ip_allow_list": "",
 
@@ -162,7 +163,7 @@ jobs:
     uses: ./.github/workflows/create-storage-account-and-container.yaml
     with:
       storage_account_rg: sa-rg
-      storage_account_name: viyasolutions1  # Storage account name must be between 3 and 24 characters in length and use numbers and lower-case letters only.
+      storage_account_name: ${{ fromJSON(needs.parse-additional-parameters.outputs.vars).storage_account_name }}  # Storage account name must be between 3 and 24 characters in length and use numbers and lower-case letters only.
       storage_account_container_name: sac-${{github.run_id}}
       location: ${{ fromJSON(needs.parse-additional-parameters.outputs.vars).location }}
       environment: ${{ inputs.environment }}
