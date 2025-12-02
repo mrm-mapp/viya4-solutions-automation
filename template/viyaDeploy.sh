@@ -542,8 +542,12 @@ function v4dInstallViya {
   echolog "[v4dInstallViya] Applying configuration for SAS Risk Cirrus solutions"
   for cirrus_solution in ${CIRRUS_SOLUTIONS[@]}
   do
+    if [[ "$cirrus_solution" == "sas-risk-cirrus-core" ]]; then
+      cirrus_solution="sas-risk-cirrus-rcc"
+      echo "[v4dInstallViya] Using sas-risk-cirrus-core rewritten to: $cirrus_solution"
+    fi
     echolog "for $cirrus_solution"
-    for modifier in "transformers" "generators"
+    for modifier in "configMapGenerator"
     do
       transformer_file="$HOME/viya4-manifests/cirrus/${cirrus_solution}-config-${modifier}-${V4_CFG_CADENCE_VERSION}.yaml"
       if [ -f "${transformer_file}" ];
@@ -568,17 +572,14 @@ function v4dInstallViya {
 
       if [ -n "$transformer_file" ]
       then
-        mkdir -p $HOME/deployments/$AKS/$V4_CFG_NAMESPACE/site-config/$cirrus_solution/resources/
-        target_file="$HOME/deployments/$AKS/$V4_CFG_NAMESPACE/site-config/$cirrus_solution/resources/${cirrus_solution}-config-${modifier}.yaml"
+        mkdir -p $HOME/deployments/$AKS/$V4_CFG_NAMESPACE/site-config/$cirrus_solution
+        target_file="$HOME/deployments/$AKS/$V4_CFG_NAMESPACE/site-config/$cirrus_solution/configuration.env"
         cp "$transformer_file" "$target_file"
 
         perl -pi -e "s|<<SAS_RISK_CIRRUS_WORKFLOW_DEFAULT_SERVICE_ACCOUNT>>|${SAS_RISK_CIRRUS_WORKFLOW_DEFAULT_SERVICE_ACCOUNT}|" $target_file
         perl -pi -e "s|<<SAS_RISK_CIRRUS_SOLUTION_BUILDER_REPO_USER>>|${SAS_RISK_CIRRUS_SOLUTION_BUILDER_REPO_USER:-Unknown}|" $target_file
-        perl -pi -e "s|<<SAS_RISK_CIRRUS_REPO_USER>>|${SAS_RISK_CIRRUS_REPO_USER:-Unknown}|" $target_file
-        perl -pi -e "s|<<SAS_RISK_CIRRUS_REPO_FQDN>>|${SAS_RISK_CIRRUS_REPO_FQDN:-Unknown}|" $target_file
-        perl -pi -e "s|<<SAS_RISK_CIRRUS_REPO_HOST>>|${SAS_RISK_CIRRUS_REPO_HOST:-Unknown}|" $target_file
 
-        kustomization_insert "kustomization.yaml" "$modifier" "[\"site-config/$cirrus_solution/resources/${cirrus_solution}-config-${modifier}.yaml\"]" "append"
+        kustomization_insert "kustomization.yaml" "$modifier" "[ name: $cirrus_solution \\n    behavior: merge \\n    envs: \\n      - site-config/$cirrus_solution/configuration.env]" "append"
         echolog "[v4dInstallViya] Kustomization for $cirrus_solution (modifier=$modifier) is applied."
       fi
     done
