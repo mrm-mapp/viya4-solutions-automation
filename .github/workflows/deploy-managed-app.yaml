@@ -44,6 +44,9 @@ on:
       mapp_def_name:
         description: DU file URLs for all DUs built during packaging.
         value: ${{ fromJSON(jobs.parse-additional-parameters.outputs.vars).mapp_def_name }}
+      monitor-artifact-name:
+        description: The final artifact monitoring name
+        value: monitor-3rdhour-${{ jobs.construct-mrg-variables.outputs.monitor_script_name }}
 
   workflow_dispatch:
     inputs:
