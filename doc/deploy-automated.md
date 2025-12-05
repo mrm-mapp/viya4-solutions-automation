@@ -13,7 +13,7 @@ Key features include:
 Follow the steps below to prepare your repository, configure GitHub Environment secrets, and trigger the deployment workflow for a streamlined SAS solution deployment experience in Azure.
 
 
-0. First, fork this repository—see [fork this repo](/doc/fork.md) for instructions. Once forked, go to your GitHub repository.
+0. First, fork this repository—see [fork this repo](/doc/fork.md) for instructions. Once forked, go to your GitHub repository. If you wish to make any changes to the artifacts that are used, make sure you edit the retrieve-package workflow file to point to your forked repo instead of the parent. `repo="<forked_repo>/viya4-solutions-automation"`
 
 1. Ensure your environment variables are set via a GitHub environment. GitHub Environments allow you to define deployment targets and are named configurations used for deployments.
 
@@ -66,7 +66,7 @@ This form allows users to provide all necessary inputs to start the automated de
 ![alt text](/doc/images/deploy-managed-app-github-ui.png "Title")
 
 
-6. Monitor the workflow for progress and results. Artifacts and logs will be available for review. After execution, the following elements are available in the selected Azure subscription (`${GITHUB_RUN_ID}` corresponds to the GitHub workflow run identifier):
+6. Monitor the workflow for progress and results. The github workflow will continue to get the logs from the azure managed application deployment process and will show as completed once the azure process has completed. Artifacts and logs will be available for review. After execution, the following elements are available in the selected Azure subscription (`${GITHUB_RUN_ID}` corresponds to the GitHub workflow run identifier):
     * A resource group named `mapp-${GITHUB_RUN_ID}-rg` containing:
        * `mappdef-${GITHUB_RUN_ID}`: Service Catalog Managed Application Definition
        * `mapp-${GITHUB_RUN_ID}`: Managed Application
@@ -77,7 +77,7 @@ This form allows users to provide all necessary inputs to start the automated de
        * `mapp${GITHUB_RUN_ID}<RandomNumber>`: Storage account for logs, deployment assets, and CA certificate
     * A resource group named `MC_mapp-${GITHUB_RUN_ID}-mrg-mapp-${GITHUB_RUN_ID}-aks_<Location>` (MC = managed by cluster), containing AKS cluster resources (nodes, disks, etc.)
     * A resource group named `sa-rg` containing:
-       * `viyasolutions`: Azure Storage Account with blob containers (`sac-${GITHUB_RUN_ID}`) for the package needed to create the Service Catalog Managed Application Definition.
+       * `viyasolutions<github.repository_owner>`: Azure Storage Account with blob containers (`sac-${GITHUB_RUN_ID}`) for the package needed to create the Service Catalog Managed Application Definition.
 
 ---
 
@@ -97,7 +97,7 @@ EOF
 ```
 
 The table below indicates which additional parameters are required
-| Label | Variable name | Required For Deploy? | Required For Update? | Default value | Link |
+| Label | Variable name | Required For Initial Deploy? | Required For Update? | Default value | Link |
 |-------------| -------------|---------|---------|--|--|
 | IP Allow List | ip_allow_list| **Yes** | No |  | [link](#ip-allow-list) |
 | Admin User Name for IDS External Postgres Server | ext_pg_ids_admin_user | Yes (Depends on other selections) | No | | [link](#admin-user-name-and-password-for-external-postgres-server)|
