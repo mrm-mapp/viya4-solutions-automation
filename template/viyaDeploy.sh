@@ -468,11 +468,18 @@ function applyViya4Manifests {
     echolog "[applyViya4Manifests] cas-enable-external-services.yaml OK"
   fi
 
-  #echolog "[applyViya4Manifests] applying cluster manifests ..."
+  echolog "[applyViya4Manifests] copying cluster manifests to deployment folder ..."
+  cp -r cluster $HOME/deployments/${AKS}
+
+  echolog "[applyViya4Manifests] applying cluster manifests ..."
   cd $HOME/deployments/${AKS}/cluster
-  ls $HOME/deployments/${AKS}/cluster
 
   for f in *.yaml; do
+    # don't deploy the Let's Encrypt issuer if we are using allowlist
+    if [[ "${USE_IP_ALLOWLIST}" == "True" && "${f}" == "letsEncryptIssuer.yaml" ]]; then
+      echolog "[applyViya4Manifests][$f] skipping, because USE_IP_ALLOWLIST=${USE_IP_ALLOWLIST} ..."
+      continue
+    fi
 
     echolog "[applyViya4Manifests][$f] applying ..."
     kubectl apply -f $f >>$LOGFILE 2>&1
