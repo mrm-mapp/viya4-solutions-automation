@@ -471,6 +471,7 @@ function applyViya4Manifests {
   #echolog "[applyViya4Manifests] applying cluster manifests ..."
   cd $HOME/deployments/${AKS}/cluster
   ls $HOME/deployments/${AKS}/cluster
+  #test
 
   for f in *.yaml; do
 
