@@ -17,7 +17,7 @@ on:
         default: 'ProdSmall'
         type: string
       viya_order_sas_uri:
-        description: 'SAS URI for Viya Order'
+        description: 'Viya Order URL'
         required: true
         type: string
       viya_admin_password:
